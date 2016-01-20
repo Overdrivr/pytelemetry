@@ -37,6 +37,8 @@ class pytelemetry:
 
         self.api.update_telemetry.argtypes = [c_float]
 
+        self.api.emplace.argtypes = [POINTER(TM_msg),c_char_p,c_uint32]
+
         # Storing closures
         # See http://stackoverflow.com/questions/7259794/how-can-i-get-methods-to-work-as-callbacks-with-python-ctypes
         self.__read = self.__get_read_cb()
@@ -81,10 +83,16 @@ class pytelemetry:
             # TODO cast buffer to appropriate type
             payload = None
             if(msg.contents.type == 7):
-                print("Type 7")
+                # Create a char * (+ 1 to have enough space)
+                cbuf = create_string_buffer(msg.contents.size + 1)
+                # Use api to format data correctly
+                self.api.emplace(msg,cbuf,msg.contents.size + 1)
+                # Convert bytes code to utf-8
+                payload = cbuf.value.decode('utf-8')
+
             # check callback is valid
             if cb:
-                cb(topic,b'booyaa') # TODO : feed casted buffer
+                cb(topic,payload)
         return on_frame_callback_t(on_frame)
 
     def __get_read_cb(self):
