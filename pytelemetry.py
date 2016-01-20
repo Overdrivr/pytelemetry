@@ -27,6 +27,13 @@ class pytelemetry:
         self.api.init_telemetry.argtypes = [POINTER(userDataStorage),POINTER(transportInterface)]
         self.api.publish.argtypes = [c_char_p, c_char_p]
 
+        # Storing closures
+        # See http://stackoverflow.com/questions/7259794/how-can-i-get-methods-to-work-as-callbacks-with-python-ctypes
+        self.__read = self.__get_read_cb()
+        self.__write = self.__get_write_cb()
+        self.__readable = self.__get_readable_cb()
+        self.__writeable = self.__get_writeable_cb()
+
         # api initialization
         t = transportInterface(self.__read,self.__readable,self.__write,self.__writeable)
         u = userDataStorage(0)
@@ -45,24 +52,31 @@ class pytelemetry:
     def update(self):
         api.update_telemetry(0)
 
-    @buffer_operation_func_t
-    def __read(uint8_ptr, data_size):
-        print("Trying to read at most ",data_size," characters.")
-        return 0
+    def __get_read_cb(self):
+        def read(uint8_ptr, data_size):
+            # Read the data
+            data = self.transport.read(maxbytes=data_size)
+            # TODO :Emplace it into the ptr
 
-    @buffer_operation_func_t
-    def __write(uint8_t_ptr, data_size):
-        print("Asking to write ",data_size," characters.")
-        for i in range(data_size):
-            print(uint8_t_ptr[i])
-        return 0
+            # TODO :Return actual amount of read characters
+            return 0
+        return buffer_operation_func_t(read)
 
-    @check_operation_func_t
-    def __readable():
-        print("Asking is readable")
-        return 0
+    def __get_write_cb(self):
+        def write(uint8_t_ptr, data_size):
+            for i in range(data_size):
+                self.transport.write(uint8_t_ptr[i])
+            return 0
+        return buffer_operation_func_t(write)
 
-    @check_operation_func_t
-    def __writeable():
-        print("Asking is writeable")
-        return 1
+    def __get_readable_cb(self):
+        def readable():
+            print("Asking is readable")
+            return 0
+        return check_operation_func_t(readable)
+
+    def __get_writeable_cb(self):
+        def writeable():
+            print("Asking is writeable")
+            return 1
+        return check_operation_func_t(writeable)
