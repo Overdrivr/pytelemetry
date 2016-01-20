@@ -8,7 +8,6 @@ class transportMock:
     def read(self, maxbytes=1):
         data = []
         amount = 0
-        print("Requested ",maxbytes)
         while amount < maxbytes and not self.queue.empty():
             c = self.queue.get()
             print("Reading :",c)
@@ -44,5 +43,5 @@ def test_publish():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_once_with('sometopic',b'booyaa')
+    cb.assert_called_once_with('sometopic','booyaa')
     #cb.assert_called_once_with('othertopic',b'booyaa')
