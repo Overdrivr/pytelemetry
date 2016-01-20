@@ -1,6 +1,7 @@
 import pytelemetry as tm
+from transports.serialtransport import *
 
-transportMock = None
+transportMock = SerialTransport()
 
 c = tm.pytelemetry(transportMock)
 
