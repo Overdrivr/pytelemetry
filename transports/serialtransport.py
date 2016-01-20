@@ -9,10 +9,11 @@ class SerialTransport:
         return 0 # TODO: Return char instead
 
     def readable(self):
-        pass
+        return 0
 
     def write(self, data):
         print("Asking to write ",data)
+        return 0
 
     def writeable(self):
-        pass
+        return 1
