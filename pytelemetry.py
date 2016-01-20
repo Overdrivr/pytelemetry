@@ -71,12 +71,10 @@ class pytelemetry:
 
     def __get_readable_cb(self):
         def readable():
-            print("Asking is readable")
-            return 0
+            return self.transport.readable()
         return check_operation_func_t(readable)
 
     def __get_writeable_cb(self):
         def writeable():
-            print("Asking is writeable")
-            return 1
+            return self.transport.writeable()
         return check_operation_func_t(writeable)
