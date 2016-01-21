@@ -138,3 +138,36 @@ def test_end_to_end_ints():
     c.update()
     assert t.queue.qsize() == 0
     cb.assert_called_with('sometopic',-2147483647)
+
+def test_end_to_end_floats():
+    # Setup
+    t = transportMock()
+    c = pytelemetry.pytelemetry(t)
+    cb = mock.Mock(spec=["topic","data"])
+    default_cb = mock.Mock(spec=["topic","data"])
+    c.subscribe('sometopic',cb)
+    c.subscribe(None,default_cb)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',0.0,'float32')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_with('sometopic',0.0)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',3.4028234e38,'float32')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    assert abs(cb.call_args[0][1] - 3.4028234e38) <= max(1e-7 * max(abs(cb.call_args[0][1]), abs(3.4028234e38)), 0.0)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',-3.4028234e38,'float32')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    assert abs(cb.call_args[0][1] - (-3.4028234e38)) <= max(1e-7 * max(abs(cb.call_args[0][1]), abs(-3.4028234e38)), 0.0)
