@@ -83,7 +83,8 @@ class pytelemetry:
             self.api.publish_i16(topic.encode(encoding='ascii'), data)
         elif datatype == 'int32':
             self.api.publish_i32(topic.encode(encoding='ascii'), data)
-
+        elif datatype == 'float32':
+            self.api.publish_f32(topic.encode(encoding='ascii'), data)
 
     # subscribe a callback to topic
     # Subscribing to None will call that function for any unsubscribed topic
@@ -167,7 +168,7 @@ class pytelemetry:
                 payload = cbuf.value
 
             # cast buffer to float32
-            elif msg.contents.type == 7 :
+            elif msg.contents.type == 0 :
                 # Create a int32
                 cbuf = c_float()
                 # Use api to format data correctly
