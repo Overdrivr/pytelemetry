@@ -35,11 +35,23 @@ class pytelemetry:
         self.api.init_telemetry.argtypes = [POINTER(TM_state),POINTER(TM_transport)]
         self.api.publish.argtypes = [c_char_p, c_char_p]
         self.api.publish_u8.argtypes = [c_char_p, c_uint8]
+        self.api.publish_u16.argtypes = [c_char_p, c_uint16]
+        self.api.publish_u32.argtypes = [c_char_p, c_uint32]
+        self.api.publish_i8.argtypes = [c_char_p, c_int8]
+        self.api.publish_i16.argtypes = [c_char_p, c_int16]
+        self.api.publish_i32.argtypes = [c_char_p, c_int32]
+        self.api.publish_f32.argtypes = [c_char_p, c_float]
 
         self.api.update_telemetry.argtypes = [c_float]
 
         self.api.emplace.argtypes = [POINTER(TM_msg),c_char_p,c_uint32]
         self.api.emplace_u8.argtypes = [POINTER(TM_msg),POINTER(c_uint8)]
+        self.api.emplace_u16.argtypes = [POINTER(TM_msg),POINTER(c_uint16)]
+        self.api.emplace_u32.argtypes = [POINTER(TM_msg),POINTER(c_uint32)]
+        self.api.emplace_i8.argtypes = [POINTER(TM_msg),POINTER(c_int8)]
+        self.api.emplace_i16.argtypes = [POINTER(TM_msg),POINTER(c_int16)]
+        self.api.emplace_i32.argtypes = [POINTER(TM_msg),POINTER(c_int32)]
+        self.api.emplace_f32.argtypes = [POINTER(TM_msg),POINTER(c_float)]
 
         # Storing closures
         # See http://stackoverflow.com/questions/7259794/how-can-i-get-methods-to-work-as-callbacks-with-python-ctypes
@@ -61,7 +73,17 @@ class pytelemetry:
             self.api.publish(topic.encode(encoding='ascii'),data.encode(encoding='ascii'))
         elif datatype == 'uint8':
             self.api.publish_u8(topic.encode(encoding='ascii'), data)
-            
+        elif datatype == 'uint16':
+            self.api.publish_u16(topic.encode(encoding='ascii'), data)
+        elif datatype == 'uint32':
+            self.api.publish_u32(topic.encode(encoding='ascii'), data)
+        elif datatype == 'int8':
+            self.api.publish_i8(topic.encode(encoding='ascii'), data)
+        elif datatype == 'int16':
+            self.api.publish_i16(topic.encode(encoding='ascii'), data)
+        elif datatype == 'int32':
+            self.api.publish_i32(topic.encode(encoding='ascii'), data)
+
 
     # subscribe a callback to topic
     # Subscribing to None will call that function for any unsubscribed topic
@@ -85,8 +107,8 @@ class pytelemetry:
             else:
                 cb = self.default_callback
 
-            # TODO cast buffer to appropriate type
             payload = None
+            # cast buffer to string
             if msg.contents.type == 7 :
                 # Create a char * (+ 1 to have enough space)
                 cbuf = create_string_buffer(msg.contents.size + 1)
@@ -94,11 +116,62 @@ class pytelemetry:
                 self.api.emplace(msg,cbuf,msg.contents.size + 1)
                 # Convert bytes code to utf-8
                 payload = cbuf.value.decode('utf-8')
+
+            # cast buffer to uint8
             elif msg.contents.type == 1 :
-                # Create a uint8
                 cbuf = c_uint8()
                 # Use api to format data correctly
                 self.api.emplace_u8(msg,byref(cbuf))
+                # Store decoded data
+                payload = cbuf.value
+
+            # cast buffer to uint16
+            elif msg.contents.type == 2 :
+                cbuf = c_uint16()
+                # Use api to format data correctly
+                self.api.emplace_u16(msg,byref(cbuf))
+                # Store decoded data
+                payload = cbuf.value
+
+            # cast buffer to uint32
+            elif msg.contents.type == 3 :
+                cbuf = c_uint32()
+                # Use api to format data correctly
+                self.api.emplace_u32(msg,byref(cbuf))
+                # Store decoded data
+                payload = cbuf.value
+
+            # cast buffer to int8
+            elif msg.contents.type == 4 :
+                cbuf = c_int8()
+                # Use api to format data correctly
+                self.api.emplace_i8(msg,byref(cbuf))
+                # Store decoded data
+                payload = cbuf.value
+
+            # cast buffer to int16
+            elif msg.contents.type == 5 :
+                cbuf = c_int16()
+                # Use api to format data correctly
+                self.api.emplace_i16(msg,byref(cbuf))
+                # Store decoded data
+                payload = cbuf.value
+
+            # cast buffer to int32
+            elif msg.contents.type == 6 :
+                # Create a int32
+                cbuf = c_int32()
+                # Use api to format data correctly
+                self.api.emplace_i32(msg,byref(cbuf))
+                # Store decoded data
+                payload = cbuf.value
+
+            # cast buffer to float32
+            elif msg.contents.type == 7 :
+                # Create a int32
+                cbuf = c_float()
+                # Use api to format data correctly
+                self.api.emplace_f32(msg,byref(cbuf))
                 # Store decoded data
                 payload = cbuf.value
 
