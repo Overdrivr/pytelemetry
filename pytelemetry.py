@@ -34,10 +34,12 @@ class pytelemetry:
         # Interface types definition
         self.api.init_telemetry.argtypes = [POINTER(TM_state),POINTER(TM_transport)]
         self.api.publish.argtypes = [c_char_p, c_char_p]
+        self.api.publish_u8.argtypes = [c_char_p, c_uint8]
 
         self.api.update_telemetry.argtypes = [c_float]
 
         self.api.emplace.argtypes = [POINTER(TM_msg),c_char_p,c_uint32]
+        self.api.emplace_u8.argtypes = [POINTER(TM_msg),POINTER(c_uint8)]
 
         # Storing closures
         # See http://stackoverflow.com/questions/7259794/how-can-i-get-methods-to-work-as-callbacks-with-python-ctypes
@@ -56,7 +58,10 @@ class pytelemetry:
 
     def publish(self, topic, data, datatype):
         if datatype == 'string':
-            self.api.publish(topic,data)
+            self.api.publish(topic.encode(encoding='ascii'),data.encode(encoding='ascii'))
+        elif datatype == 'uint8':
+            self.api.publish_u8(topic.encode(encoding='ascii'), data)
+            
 
     # subscribe a callback to topic
     # Subscribing to None will call that function for any unsubscribed topic
@@ -82,13 +87,20 @@ class pytelemetry:
 
             # TODO cast buffer to appropriate type
             payload = None
-            if(msg.contents.type == 7):
+            if msg.contents.type == 7 :
                 # Create a char * (+ 1 to have enough space)
                 cbuf = create_string_buffer(msg.contents.size + 1)
                 # Use api to format data correctly
                 self.api.emplace(msg,cbuf,msg.contents.size + 1)
                 # Convert bytes code to utf-8
                 payload = cbuf.value.decode('utf-8')
+            elif msg.contents.type == 1 :
+                # Create a uint8
+                cbuf = c_uint8()
+                # Use api to format data correctly
+                self.api.emplace_u8(msg,byref(cbuf))
+                # Store decoded data
+                payload = cbuf.value
 
             # check callback is valid
             if cb:
