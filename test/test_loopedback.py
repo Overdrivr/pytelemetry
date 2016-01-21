@@ -10,7 +10,6 @@ class transportMock:
         amount = 0
         while amount < maxbytes and not self.queue.empty():
             c = self.queue.get()
-            print("Reading :",c)
             data.append(c)
             amount += 1
         return data
@@ -20,14 +19,13 @@ class transportMock:
 
     def write(self, data):
         for i in range(len(data)):
-            print("Writing :",data[i])
             self.queue.put(data[i])
         return 0
 
     def writeable(self):
         return not self.queue.full()
 
-def test_publish():
+def test_end_to_end_string():
     # Setup
     t = transportMock()
     c = pytelemetry.pytelemetry(t)
@@ -36,12 +34,107 @@ def test_publish():
     c.subscribe('sometopic',cb)
     c.subscribe(None,default_cb)
 
-    # testing
+    # testing callback subscribed to topic
     assert t.queue.qsize() == 0
-    # Writing to mock transport is looped back to read
-    c.publish(b'sometopic',b'booyaa','string')
+    c.publish('sometopic','someMessage','string')
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_once_with('sometopic','booyaa')
-    #cb.assert_called_once_with('othertopic',b'booyaa')
+    cb.assert_called_once_with('sometopic','someMessage')
+
+    # test default callback
+    c.publish('othertopic','otherMessage','string')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    default_cb.assert_called_once_with('othertopic','otherMessage')
+
+def test_end_to_end_uints():
+    # Setup
+    t = transportMock()
+    c = pytelemetry.pytelemetry(t)
+    cb = mock.Mock(spec=["topic","data"])
+    default_cb = mock.Mock(spec=["topic","data"])
+    c.subscribe('sometopic',cb)
+    c.subscribe(None,default_cb)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',255,'uint8')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_with('sometopic',255)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',65535,'uint16')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_with('sometopic',65535)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',4294967295,'uint32')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_with('sometopic',4294967295)
+
+def test_end_to_end_ints():
+    # Setup
+    t = transportMock()
+    c = pytelemetry.pytelemetry(t)
+    cb = mock.Mock(spec=["topic","data"])
+    default_cb = mock.Mock(spec=["topic","data"])
+    c.subscribe('sometopic',cb)
+    c.subscribe(None,default_cb)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',127,'int8')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_with('sometopic',127)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',-127,'int8')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_with('sometopic',-127)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',32767,'int16')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_with('sometopic',32767)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',-32767,'int16')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_with('sometopic',-32767)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',2147483647,'int32')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_with('sometopic',2147483647)
+
+    # testing callback subscribed to topic
+    assert t.queue.qsize() == 0
+    c.publish('sometopic',-2147483647,'int32')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_with('sometopic',-2147483647)
