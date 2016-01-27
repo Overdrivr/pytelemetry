@@ -1,6 +1,6 @@
 from  .. import pytelemetry
 import queue
-import mock
+import unittest.mock as mock
 
 class transportMock:
     def __init__(self):
@@ -48,6 +48,45 @@ def test_end_to_end_string():
     c.update()
     assert t.queue.qsize() == 0
     default_cb.assert_called_once_with('othertopic','otherMessage')
+
+def test_topic_contains_space_first():
+    # Setup
+    t = transportMock()
+    c = pytelemetry.pytelemetry(t)
+    cb = mock.Mock(spec=["topic","data"])
+    c.subscribe(' topicwithspacefirst',cb)
+
+    c.publish(' topicwithspacefirst',1234567,'int32')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_once_with(' topicwithspacefirst',1234567)
+
+def test_topic_contains_space_last():
+    # Setup
+    t = transportMock()
+    c = pytelemetry.pytelemetry(t)
+    cb = mock.Mock(spec=["topic","data"])
+    c.subscribe('topicwithspacefirst ',cb)
+
+    c.publish('topicwithspacefirst ',1234567,'int32')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_once_with('topicwithspacefirst ',1234567)
+
+def test_topic_contains_space_both_ends():
+    # Setup
+    t = transportMock()
+    c = pytelemetry.pytelemetry(t)
+    cb = mock.Mock(spec=["topic","data"])
+    c.subscribe(' topicwithspaces ',cb)
+
+    c.publish(' topicwithspaces ',1234567,'int32')
+    assert t.queue.qsize() > 0
+    c.update()
+    assert t.queue.qsize() == 0
+    cb.assert_called_once_with(' topicwithspaces ',1234567)
 
 def test_end_to_end_uints():
     # Setup
