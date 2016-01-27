@@ -5,7 +5,6 @@ class SerialTransport:
         self.driver = None
 
     def connect(self, options):
-        print(options['port'])
         self.driver = serial.Serial(port=options['port'],baudrate=options['baudrate'])
 
     def disconnect(self):
