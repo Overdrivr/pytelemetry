@@ -40,10 +40,8 @@ while True:
 # disconnect
 transport.disconnect()
 ```
-The library relies on a Publishing/Subscribing mechanism. Publishing on one side triggers a call to 
-### publish
-
-### subscribe
+The library relies on a Publishing/Subscribing mechanism.
+Publishing on one side triggers a call to a subscribed function on the other side.
 
 ## Installation
 Python 3.5+ only is supported.

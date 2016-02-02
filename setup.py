@@ -3,12 +3,6 @@ from codecs import open
 from os import path
 from setuptools.dist import Distribution
 
-here = path.abspath(path.dirname(__file__))
-
-# Get the long description from the README file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
-    long_description = f.read()
-
 class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
@@ -19,7 +13,6 @@ setup(
     version='1.0.0',
 
     description='Lightweight remote monitoring and control of embedded devices',
-    long_description=long_description,
 
     url='https://github.com/Overdrivr/pytelemetry',
 
@@ -58,6 +51,9 @@ setup(
     # Workaround
     include_package_data=True,
     distclass=BinaryDistribution,
+
+    setup_requires=['setuptools-markdown'],
+    long_description_markdown_filename='README.md',
 
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
