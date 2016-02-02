@@ -1,5 +1,5 @@
 from ctypes import *
-
+import os
 # Function definitions for C api
 buffer_operation_func_t = CFUNCTYPE(c_int32, POINTER(c_uint8), c_uint32)
 check_operation_func_t = CFUNCTYPE(c_int32)
@@ -29,7 +29,13 @@ class pytelemetry:
         self.transport = transport
         self.callbacks = dict()
         self.default_callback = None
-        self.api = CDLL('telemetry.dll')
+
+        lib_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),'telemetry','telemetry.dll')
+        lib_crc16 = os.path.join(os.path.dirname(os.path.dirname(__file__)),'telemetry','crc16.dll')
+        lib_framing = os.path.join(os.path.dirname(os.path.dirname(__file__)),'telemetry','framing.dll')
+        self.crc16 = CDLL(lib_crc16)
+        self.framing = CDLL(lib_framing)
+        self.api = CDLL(lib_path)
 
         # Interface types definition
         self.api.init_telemetry.argtypes = [POINTER(TM_state),POINTER(TM_transport)]
