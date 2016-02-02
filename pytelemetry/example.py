@@ -9,7 +9,7 @@ transport = SerialTransport()
 c = tm.pytelemetry(transport)
 
 options = dict()
-options['port'] = "COM18"
+options['port'] = "COM20"
 options['baudrate'] = 9600
 
 transport.connect(options)
