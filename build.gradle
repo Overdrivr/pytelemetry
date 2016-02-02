@@ -6,25 +6,26 @@ buildscript {
 import org.ajoberstar.grgit.*
 
 task cloneGitRepo << {
-  Grgit.clone(dir: 'c/Telemetry', uri: 'https://github.com/Overdrivr/Telemetry.git')
+  def grgit = Grgit.clone(dir: 'c/Telemetry', uri: 'https://github.com/Overdrivr/Telemetry.git')
+  grgit.checkout(branch: 'tags/1.0.0')
 }
 
 task copyCrc16(type: Copy) {
   from 'c/Telemetry/build/libs/crc16/shared/release/'
-  into 'pytelemetry'
-  include '**.dll','**.so'
+  into 'telemetry'
+  include '**.dll','**.so','**.dynlib'
 }
 
 task copyFraming(type: Copy) {
   from 'c/Telemetry/build/libs/framing/shared/release/'
-  into 'pytelemetry'
-  include '**.dll','**.so'
+  into 'telemetry'
+  include '**.dll','**.so','**.dynlib'
 }
 
 task copyTelemetry(type: Copy) {
   from 'c/Telemetry/build/libs/telemetry/shared/release/'
-  into 'pytelemetry'
-  include '**.dll','**.so'
+  into 'telemetry'
+  include '**.dll','**.so','**.dynlib'
 }
 
 task copyFiles {
