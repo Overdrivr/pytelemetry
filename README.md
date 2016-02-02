@@ -70,6 +70,6 @@ pip install -e .
 
 ### Mac OS
 *Note : No precompiled binaries available yet. You need to compile from source just like Unix.*
-'''bash
+```bash
 pip install pytelemetry
 ```
