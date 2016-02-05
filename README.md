@@ -1,4 +1,6 @@
 # pytelemetry
+
+[![Join the chat at https://gitter.im/Overdrivr/pytelemetry](https://badges.gitter.im/Overdrivr/pytelemetry.svg)](https://gitter.im/Overdrivr/pytelemetry?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 pytelemetry enables remote monitoring and control of embedded devices.
 It is a python wrapper of the (telemetry C library)[https://github.com/Overdrivr/Telemetry]
 
