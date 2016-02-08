@@ -2,7 +2,7 @@ from .telemetry.telemetry import Telemetry
 from .telemetry.c_binding import TelemetryCBinding
 __all__ = ['Pytelemetry']
 
-_telemetry_use_c_api = True
+_telemetry_use_c_api = False
 
 # pytelemetry interface
 class Pytelemetry:
