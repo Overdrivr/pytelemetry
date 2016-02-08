@@ -1,4 +1,5 @@
-
+from ctypes import *
+import os
 # Function definitions for C api
 buffer_operation_func_t = CFUNCTYPE(c_int32, POINTER(c_uint8), c_uint32)
 check_operation_func_t = CFUNCTYPE(c_int32)
@@ -26,8 +27,8 @@ class TelemetryCBinding:
     """
 C API Abstraction over the C binding protocol implementation
     """
-    def __init__(self, on_frame_callback):
-
+    def __init__(self, transport, on_frame_callback):
+        self.transport = transport
         self.on_frame_callback = on_frame_callback
 
         lib_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),'telemetry','telemetry.dll')
