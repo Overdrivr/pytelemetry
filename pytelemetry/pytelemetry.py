@@ -43,7 +43,7 @@ class Pytelemetry:
         if _telemetry_use_c_api:
             self.api = TelemetryCBinding(transport,self._on_frame)
         else:
-            self.api = Telemetry()
+            self.api = Telemetry(transport,self._on_frame)
 
     def publish(self, topic, data, datatype):
         """
