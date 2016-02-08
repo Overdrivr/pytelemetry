@@ -1,7 +1,8 @@
-from ctypes import *
-import os
-
+from .telemetry.telemetry import Telemetry
+from .telemetry.c_binding import TelemetryCBinding
 __all__ = ['Pytelemetry']
+
+_telemetry_use_c_api = True
 
 # pytelemetry interface
 class Pytelemetry:
@@ -35,12 +36,12 @@ class Pytelemetry:
             :param transport: A transport-compliant class. See Pytelemetry class
             documentation for more information
         """
-        self.transport = transport
+
         self.callbacks = dict()
         self.default_callback = None
 
-        if telemetry_use_c_api:
-            self.api = TelemetryCBinding(self._on_frame)
+        if _telemetry_use_c_api:
+            self.api = TelemetryCBinding(transport,self._on_frame)
         else:
             self.api = Telemetry()
 
@@ -61,7 +62,7 @@ class Pytelemetry:
     def update(self):
         self.api.update()
 
-    def _on_frame(self, topic, payload)
+    def _on_frame(self, topic, payload):
         cb = None
         # Search if topic has a registered callback
         if topic in self.callbacks:
