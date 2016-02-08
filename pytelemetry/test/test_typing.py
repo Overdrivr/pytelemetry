@@ -1,4 +1,4 @@
-from  .. import pytelemetry
+from  ..pytelemetry import Pytelemetry
 import queue
 import pytest
 import unittest.mock as mock
@@ -29,7 +29,7 @@ class transportMock:
 def test_wrong_type():
     # Setup
     t = transportMock()
-    c = pytelemetry.pytelemetry(t)
+    c = Pytelemetry(t)
 
     with pytest.raises(Exception) as excinfo:
         c.publish('sometopic',12,'string')
@@ -39,14 +39,14 @@ def test_wrong_type():
 def test_unexisting_type():
     # Setup
     t = transportMock()
-    c = pytelemetry.pytelemetry(t)
+    c = Pytelemetry(t)
 
     c.publish('sometopic',12,'int323')
     assert t.queue.qsize() == 0
 
 def test_hardcoded():
     t = transportMock()
-    c = pytelemetry.pytelemetry(t)
+    c = Pytelemetry(t)
     cb = mock.Mock(spec=["topic","data"])
     c.subscribe('sometopic ',cb)
 
