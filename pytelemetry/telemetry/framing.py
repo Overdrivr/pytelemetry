@@ -12,8 +12,7 @@ class ESC_STATE(Enum):
     IDLE = 0
     NEXT = 1
 
-#Robust serial protocol with bit stuffing to delimit frames
-class Protocol():
+class Delimiter():
     def __init__(self,on_frame_decoded_callback):
         self.rx_state = RX_STATE.IDLE;
         self.escape_state = ESC_STATE.IDLE;
@@ -81,7 +80,7 @@ class Protocol():
                 pass
                 #print("Unprocessed :"+str(newbyte))
 
-    def encode(self, rxpayload):
+    def encode(self,rxpayload):
         frame = bytearray()
         frame.append(self.SOF)
 
