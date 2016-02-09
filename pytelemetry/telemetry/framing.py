@@ -27,58 +27,46 @@ class Delimiter():
         # new frame callback
         self.on_frame_decoded_callback = on_frame_decoded_callback
 
-    def decode(self, rxbyte):
-        #newbyte = int.from_bytes(rxbyte,byteorder='big')
-        newbyte=rxbyte
-        #newbyte = rxbyte
-        self.processed_octets += 1
-        #No frame in process
-        if self.rx_state == RX_STATE.IDLE:
-            if newbyte == self.SOF:
-                # New frame started
-                self.rx_state = RX_STATE.IN_PROCESS
-                self.escape_state = ESC_STATE.IDLE
-                self.framesize = 0;
+    def decode(self, data):
+        for c in data:
+            self.processed_octets += 1
+            # no frame in process
+            if self.rx_state == RX_STATE.IDLE:
+                if c == self.SOF:
+                    # New frame started
+                    self.rx_state = RX_STATE.IN_PROCESS
+                    self.escape_state = ESC_STATE.IDLE
+                    self.framesize = 0
+
+            # frame in process
             else:
-                pass
-                #print(str(newbyte))
-
-        #Frame is in process
-        else:
-            #Next char must be data
-            if self.escape_state == ESC_STATE.NEXT:
-                #Byte destuffing, this char must not be interpreted as flag
-                #See serial_protocols_definition.xlsx
-                self.payload.append(newbyte)
-                self.escape_state = ESC_STATE.IDLE
-                self.framesize += 1;
-
-            #Next char can be data or flag (EOF, SOF,..)
-            elif self.escape_state == ESC_STATE.IDLE:
-                #End of frame, the payload is immediatly send to callback function
-                if newbyte == self.EOF:
-                    # Send frame to callback function
-                    self.on_frame_decoded_callback(self.payload)
-                    self.payload = bytearray()
-                    self.rx_state = RX_STATE.IDLE
-
-                #Receive a SOF while a frame is running, error
-                elif newbyte == self.SOF:
-                    #print("Protocol : Received frame unvalid, discarding.", self.payload)
-                    self.payload = bytearray()
-                    self.rx_state = RX_STATE.IDLE
-
-                #Escaping
-                elif newbyte == self.ESC:
-                    self.escape_state = ESC_STATE.NEXT
-
-                #Storing data
-                else:
-                    self.payload.append(newbyte)
+                # escaping
+                if self.escape_state == ESC_STATE.NEXT:
+                    self.payload.append(c)
+                    self.escape_state = ESC_STATE.IDLE
                     self.framesize += 1;
-            else:
-                pass
-                #print("Unprocessed :"+str(newbyte))
+
+                elif self.escape_state == ESC_STATE.IDLE:
+                    if c == self.EOF:
+                        # Send frame to callback function
+                        self.on_frame_decoded_callback(self.payload)
+                        self.payload = bytearray()
+                        self.rx_state = RX_STATE.IDLE
+
+                    elif c == self.SOF:
+                        self.payload = bytearray()
+                        self.rx_state = RX_STATE.IDLE
+                        self.rx_state = RX_STATE.IN_PROCESS
+                        self.framesize = 0
+
+                    # escape next
+                    elif c == self.ESC:
+                        self.escape_state = ESC_STATE.NEXT
+
+                    # pure data
+                    else:
+                        self.payload.append(c)
+                        self.framesize += 1;
 
     def encode(self,rxpayload):
         frame = bytearray()
