@@ -1,10 +1,10 @@
 from .crc import crc16
 from .framing import Delimiter
-from struct import pack
+from struct import pack, unpack
 
 class Telemetry:
     """
-    Low level telemetry protocol (github.com/Overdrivr/Telemetry)
+Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in python
     """
     def __init__(self,transport, on_frame_callback):
         self.transport = transport
@@ -18,6 +18,23 @@ class Telemetry:
                       'int16'   : 5,
                       'int32'   : 6,
                       'string'  : 7}
+
+        self.sizes = {'float32' : 4,
+                      'uint8'   : 1,
+                      'uint16'  : 2,
+                      'uint32'  : 4,
+                      'int8'    : 1,
+                      'int16'   : 2,
+                      'int32'   : 4}
+
+        self.rtypes = {0 : 'float32',
+                       1 : 'uint8',
+                       2 : 'uint16',
+                       3 : 'uint32',
+                       4 : 'int8',
+                       5 : 'int16',
+                       6 : 'int32',
+                       7 : 'string'}
 
         self.formats = {'float32' : ">f",
                         'uint8'   : ">B",
@@ -70,13 +87,51 @@ class Telemetry:
             self.transport.write(frame)
 
     def update(self):
-        pass
+        amount = self.transport.readable();
+        for i in range(amount):
+            c = self.transport.read(maxbytes=1)
+            self.delimiter.decode(c)
 
-    def _emplace(self, msg, data):
-        pass
+    def _on_frame_detected(self, frame):
+        if len(frame) > 2:
+            return
 
-    def _on_frame_detected(self, payload):
-        pass
+        # check crc
+        local_crc = crc16(frame)
+        frame_crc, = unpack_from(">H", frame[-2:], offset=0)
+
+        if local_crc != frame_crc:
+            return
+
+        # header
+        header, = unpack_from(">H", frame, offset=0)
+
+        # locate EOL
+        try:
+            i = frame.find(0)
+        except:
+            return
+
+        # decode topic
+        topic = frame[2:i].decode(encoding="utf-8")
+
+        if not header in self.rtypes:
+            return
+
+        # Find format from header
+        _type = self.rtypes[header]
+        fmt = self.formats[_type]
+
+        # decode data
+        if _type == "string":
+            data = frame[i:-2].decode(encoding="utf-8")
+        else:
+            if len(frame[i:-2]) != self.sizes[_type]:
+                return
+            data = unpack(fmt,frame[i:-2])
+
+        self.on_frame_callback(topic, data)
+
 
 if __name__ == '__main__':
     t = Telemetry(None,None)
