@@ -2,12 +2,13 @@ from setuptools import setup, find_packages, Extension
 from codecs import open
 from os import path
 from setuptools.dist import Distribution
+import pypandoc
 
 try:
-   import pypandoc
    description = pypandoc.convert('README.md', 'rst')
-except (IOError, ImportError):
+except (IOError, ImportError) as e:
     print("ERROR : Could not convert README.md. Fallback")
+    print(e)
     description = open('README.md').read()
 
 class BinaryDistribution(Distribution):
