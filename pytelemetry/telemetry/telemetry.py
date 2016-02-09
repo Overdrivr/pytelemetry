@@ -36,22 +36,24 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
                        6 : 'int32',
                        7 : 'string'}
 
-        self.formats = {'float32' : ">f",
-                        'uint8'   : ">B",
-                        'uint16'  : ">H",
-                        'uint32'  : ">L",
-                        'int8'    : ">b",
-                        'int16'   : ">h",
-                        'int32'   : ">l"}
+        self.formats = {'float32' : "<f",
+                        'uint8'   : "<B",
+                        'uint16'  : "<H",
+                        'uint32'  : "<L",
+                        'int8'    : "<b",
+                        'int16'   : "<h",
+                        'int32'   : "<l"}
 
     def publish(self,topic, data, datatype):
         frame = bytearray()
 
         # header
         if not datatype in self.types:
-            raise IndexError("Provided datatype ",datatype," unknown.")
+            return # Not raising exceptions for now for consistency with C API
+            # TODO: To fix
+            #raise IndexError("Provided datatype ",datatype," unknown.")
 
-        header = pack(">H",self.types[datatype])
+        header = pack("<H",self.types[datatype])
         for b in header:
             frame.append(b)
 
@@ -74,7 +76,7 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
 
         # crc
         _crc = crc16(frame)
-        _crc = pack(">H",_crc)
+        _crc = pack("<H",_crc)
 
         for b in _crc:
             frame.append(b)
@@ -95,16 +97,16 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
     def _on_frame_detected(self, frame):
         if len(frame) < 2:
             return
-
+        #import pdb; pdb.set_trace()
         # check crc
         local_crc = crc16(frame[:-2])
-        frame_crc, = unpack_from(">H", frame[-2:], offset=0)
+        frame_crc, = unpack_from("<H", frame[-2:], offset=0)
 
         if local_crc != frame_crc:
             return
 
         # header
-        header, = unpack_from(">H", frame, offset=0)
+        header, = unpack_from("<H", frame, offset=0)
 
         # locate EOL
         try:
@@ -129,9 +131,10 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
             # Find format
             fmt = self.formats[_type]
             # Check actual sizes matches the one expected by unpack
-            if len(frame[i:-3]) != self.sizes[_type]:
+            # (start at i+1 to remove EOL zero)
+            if len(frame[i+1:-2]) != self.sizes[_type]:
                 return
-            data = unpack(fmt,frame[i:-3])
+            data, = unpack(fmt,frame[i+1:-2])
 
         self.on_frame_callback(topic, data)
 
@@ -139,4 +142,4 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
 if __name__ == '__main__':
     t = Telemetry(None,None)
 
-    t.publish("test",235,"float32")
+    t.publish('sometopic ',12457,"int32")
