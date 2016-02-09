@@ -129,10 +129,10 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
             # Find format
             fmt = self.formats[_type]
             # Check actual sizes matches the one expected by unpack
-            if len(frame[i:-2]) != self.sizes[_type]:
+            if len(frame[i:-3]) != self.sizes[_type]:
                 return
-            data = unpack(fmt,frame[i:-2])
-        
+            data = unpack(fmt,frame[i:-3])
+
         self.on_frame_callback(topic, data)
 
 
