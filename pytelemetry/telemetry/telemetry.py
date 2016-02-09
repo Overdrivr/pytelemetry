@@ -1,6 +1,6 @@
 from .crc import crc16
 from .framing import Delimiter
-from struct import pack, unpack
+from struct import pack, unpack, unpack_from
 
 class Telemetry:
     """
@@ -93,11 +93,11 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
             self.delimiter.decode(c)
 
     def _on_frame_detected(self, frame):
-        if len(frame) > 2:
+        if len(frame) < 2:
             return
 
         # check crc
-        local_crc = crc16(frame)
+        local_crc = crc16(frame[:-2])
         frame_crc, = unpack_from(">H", frame[-2:], offset=0)
 
         if local_crc != frame_crc:
@@ -108,7 +108,7 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
 
         # locate EOL
         try:
-            i = frame.find(0)
+            i = frame[2:-2].find(0) + 2 # Account for offset of 2 induced by sciling
         except:
             return
 
@@ -118,18 +118,21 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
         if not header in self.rtypes:
             return
 
-        # Find format from header
+        # Find type from header
         _type = self.rtypes[header]
-        fmt = self.formats[_type]
 
         # decode data
         if _type == "string":
-            data = frame[i:-2].decode(encoding="utf-8")
+            # start at i+1 to remove EOL zero
+            data = frame[i+1:-2].decode(encoding="utf-8")
         else:
+            # Find format
+            fmt = self.formats[_type]
+            # Check actual sizes matches the one expected by unpack
             if len(frame[i:-2]) != self.sizes[_type]:
                 return
             data = unpack(fmt,frame[i:-2])
-
+        
         self.on_frame_callback(topic, data)
 
 
