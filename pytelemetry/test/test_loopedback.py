@@ -1,4 +1,4 @@
-from  .. import pytelemetry
+from  ..pytelemetry import Pytelemetry
 import queue
 import unittest.mock as mock
 
@@ -28,7 +28,7 @@ class transportMock:
 def test_end_to_end_string():
     # Setup
     t = transportMock()
-    c = pytelemetry.pytelemetry(t)
+    c = Pytelemetry(t)
     cb = mock.Mock(spec=["topic","data"])
     default_cb = mock.Mock(spec=["topic","data"])
     c.subscribe('sometopic',cb)
@@ -52,7 +52,7 @@ def test_end_to_end_string():
 def test_topic_contains_space_first():
     # Setup
     t = transportMock()
-    c = pytelemetry.pytelemetry(t)
+    c = Pytelemetry(t)
     cb = mock.Mock(spec=["topic","data"])
     c.subscribe(' topicwithspacefirst',cb)
 
@@ -65,7 +65,7 @@ def test_topic_contains_space_first():
 def test_topic_contains_space_last():
     # Setup
     t = transportMock()
-    c = pytelemetry.pytelemetry(t)
+    c = Pytelemetry(t)
     cb = mock.Mock(spec=["topic","data"])
     c.subscribe('topicwithspacefirst ',cb)
 
@@ -78,7 +78,7 @@ def test_topic_contains_space_last():
 def test_topic_contains_space_both_ends():
     # Setup
     t = transportMock()
-    c = pytelemetry.pytelemetry(t)
+    c = Pytelemetry(t)
     cb = mock.Mock(spec=["topic","data"])
     c.subscribe(' topicwithspaces ',cb)
 
@@ -91,7 +91,7 @@ def test_topic_contains_space_both_ends():
 def test_end_to_end_uints():
     # Setup
     t = transportMock()
-    c = pytelemetry.pytelemetry(t)
+    c = Pytelemetry(t)
     cb = mock.Mock(spec=["topic","data"])
     default_cb = mock.Mock(spec=["topic","data"])
     c.subscribe('sometopic',cb)
@@ -124,7 +124,7 @@ def test_end_to_end_uints():
 def test_end_to_end_ints():
     # Setup
     t = transportMock()
-    c = pytelemetry.pytelemetry(t)
+    c = Pytelemetry(t)
     cb = mock.Mock(spec=["topic","data"])
     default_cb = mock.Mock(spec=["topic","data"])
     c.subscribe('sometopic',cb)
@@ -181,7 +181,7 @@ def test_end_to_end_ints():
 def test_end_to_end_floats():
     # Setup
     t = transportMock()
-    c = pytelemetry.pytelemetry(t)
+    c = Pytelemetry(t)
     cb = mock.Mock(spec=["topic","data"])
     default_cb = mock.Mock(spec=["topic","data"])
     c.subscribe('sometopic',cb)

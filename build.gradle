@@ -12,19 +12,19 @@ task cloneGitRepo << {
 
 task copyCrc16(type: Copy) {
   from 'c/Telemetry/build/libs/crc16/shared/release/'
-  into 'telemetry'
+  into 'pytelemetry/telemetry/'
   include '**.dll','**.so','**.dynlib'
 }
 
 task copyFraming(type: Copy) {
   from 'c/Telemetry/build/libs/framing/shared/release/'
-  into 'telemetry'
+  into 'pytelemetry/telemetry/'
   include '**.dll','**.so','**.dynlib'
 }
 
 task copyTelemetry(type: Copy) {
   from 'c/Telemetry/build/libs/telemetry/shared/release/'
-  into 'telemetry'
+  into 'pytelemetry/telemetry/'
   include '**.dll','**.so','**.dynlib'
 }
 
