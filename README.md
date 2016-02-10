@@ -12,7 +12,7 @@ Specifically, `pytelemetry` implements a custom communication protocol, based on
 This communication protocol is also available in a C library called [`telemetry`](https://github.com/Overdrivr/telemetry)
  that is specifically designed to run on all platforms and to be as light as possible.
 
-![Overview](https://raw.githubusercontent.com/Overdrivr/pytelemetry/master/overview_simple.png)
+![Overview](https://raw.githubusercontent.com/Overdrivr/pytelemetry/master/simple_overview.png)
 
 Don't forget to check the [`bonus`](https://github.com/Overdrivr/pytelemetry#bonus) at the end.
 
@@ -105,7 +105,11 @@ In the next milestone, it is planned to make topics more meaningful (on the pyth
 * Combination : `bar\foobar\foo`,`bar\foobar\foo:2`
 * Multiple instances : `bar\12\foo` will be understood as `foo` instance number 12 (useful if you want to have multiple instances under a same topic name)
 
-On python and C implementations of the protocol, It is planned to add string compression with Huffman's Algorithm, and replace the byte stuffing algorithm by a consistent-over byte stuffing algorithm that both will contribute to reduce overhead and frames size.
+For both python and C implementations of the protocol, it is also planned:
+* add string compression with Huffman's Algorithm
+* replace the byte stuffing algorithm by a consistent-over byte stuffing algorithm
+
+ Both will contribute to reduce overhead and frames size.
 
 ## Bonus
 
