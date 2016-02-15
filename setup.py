@@ -2,14 +2,12 @@ from setuptools import setup, find_packages, Extension
 from codecs import open
 from os import path
 from setuptools.dist import Distribution
-import pypandoc
 
-try:
-   description = pypandoc.convert('README.md', 'rst')
-except (IOError, ImportError) as e:
-    print("ERROR : Could not convert README.md. Fallback")
-    print(e)
-    description = open('README.md').read()
+here = path.abspath(path.dirname(__file__))
+# Get the long description from the README file
+with open(path.join(here, 'README0.rst'), encoding='utf-8') as f:
+    long_description = f.read()
+    print(long_description)
 
 setup(
     name='pytelemetry',
@@ -17,7 +15,7 @@ setup(
     version='1.1.0',
 
     description='Lightweight remote monitoring and control of embedded devices',
-    long_description=description, # Not working !
+    long_description=long_description, # Not working !
 
     url='https://github.com/Overdrivr/pytelemetry',
 
