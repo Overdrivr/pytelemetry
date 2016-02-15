@@ -1,4 +1,4 @@
-from  ..pytelemetry import Pytelemetry
+from  pytelemetry import Pytelemetry
 import queue
 import pytest
 import unittest.mock as mock
@@ -55,7 +55,7 @@ def test_hardcoded():
     t.write([247, 6, 0, 115, 111, 109, 101, 116, 111, 112, 105, 99, 32, 0, 169, 48, 0, 0, 111, 249, 127])
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_once_with('sometopic ',12457)
+    cb.assert_called_once_with('sometopic ',12457, None)
 
 # TODO : Check what happens is string is non null terminated
 

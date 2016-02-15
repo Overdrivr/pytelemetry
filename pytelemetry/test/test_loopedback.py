@@ -1,4 +1,4 @@
-from  ..pytelemetry import Pytelemetry
+from pytelemetry import Pytelemetry
 import queue
 import unittest.mock as mock
 
@@ -29,8 +29,8 @@ def test_end_to_end_string():
     # Setup
     t = transportMock()
     c = Pytelemetry(t)
-    cb = mock.Mock(spec=["topic","data"])
-    default_cb = mock.Mock(spec=["topic","data"])
+    cb = mock.Mock(spec=["topic","data","opts"])
+    default_cb = mock.Mock(spec=["topic","data","opts"])
     c.subscribe('sometopic',cb)
     c.subscribe(None,default_cb)
 
@@ -40,60 +40,60 @@ def test_end_to_end_string():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_once_with('sometopic','someMessage')
+    cb.assert_called_once_with('sometopic','someMessage',None)
 
     # test default callback
     c.publish('othertopic','otherMessage','string')
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    default_cb.assert_called_once_with('othertopic','otherMessage')
+    default_cb.assert_called_once_with('othertopic','otherMessage',None)
 
 def test_topic_contains_space_first():
     # Setup
     t = transportMock()
     c = Pytelemetry(t)
-    cb = mock.Mock(spec=["topic","data"])
+    cb = mock.Mock(spec=["topic","data","opts"])
     c.subscribe(' topicwithspacefirst',cb)
 
     c.publish(' topicwithspacefirst',1234567,'int32')
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_once_with(' topicwithspacefirst',1234567)
+    cb.assert_called_once_with(' topicwithspacefirst',1234567,None)
 
 def test_topic_contains_space_last():
     # Setup
     t = transportMock()
     c = Pytelemetry(t)
-    cb = mock.Mock(spec=["topic","data"])
+    cb = mock.Mock(spec=["topic","data","opts"])
     c.subscribe('topicwithspacefirst ',cb)
 
     c.publish('topicwithspacefirst ',1234567,'int32')
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_once_with('topicwithspacefirst ',1234567)
+    cb.assert_called_once_with('topicwithspacefirst ',1234567,None)
 
 def test_topic_contains_space_both_ends():
     # Setup
     t = transportMock()
     c = Pytelemetry(t)
-    cb = mock.Mock(spec=["topic","data"])
+    cb = mock.Mock(spec=["topic","data","opts"])
     c.subscribe(' topicwithspaces ',cb)
 
     c.publish(' topicwithspaces ',1234567,'int32')
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_once_with(' topicwithspaces ',1234567)
+    cb.assert_called_once_with(' topicwithspaces ',1234567,None)
 
 def test_end_to_end_uints():
     # Setup
     t = transportMock()
     c = Pytelemetry(t)
-    cb = mock.Mock(spec=["topic","data"])
-    default_cb = mock.Mock(spec=["topic","data"])
+    cb = mock.Mock(spec=["topic","data","opts"])
+    default_cb = mock.Mock(spec=["topic","data","opts"])
     c.subscribe('sometopic',cb)
     c.subscribe(None,default_cb)
 
@@ -103,7 +103,7 @@ def test_end_to_end_uints():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_with('sometopic',255)
+    cb.assert_called_with('sometopic',255,None)
 
     # testing callback subscribed to topic
     assert t.queue.qsize() == 0
@@ -111,7 +111,7 @@ def test_end_to_end_uints():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_with('sometopic',65535)
+    cb.assert_called_with('sometopic',65535,None)
 
     # testing callback subscribed to topic
     assert t.queue.qsize() == 0
@@ -119,14 +119,14 @@ def test_end_to_end_uints():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_with('sometopic',4294967295)
+    cb.assert_called_with('sometopic',4294967295,None)
 
 def test_end_to_end_ints():
     # Setup
     t = transportMock()
     c = Pytelemetry(t)
-    cb = mock.Mock(spec=["topic","data"])
-    default_cb = mock.Mock(spec=["topic","data"])
+    cb = mock.Mock(spec=["topic","data","opts"])
+    default_cb = mock.Mock(spec=["topic","data","opts"])
     c.subscribe('sometopic',cb)
     c.subscribe(None,default_cb)
 
@@ -136,7 +136,7 @@ def test_end_to_end_ints():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_with('sometopic',127)
+    cb.assert_called_with('sometopic',127,None)
 
     # testing callback subscribed to topic
     assert t.queue.qsize() == 0
@@ -144,7 +144,7 @@ def test_end_to_end_ints():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_with('sometopic',-127)
+    cb.assert_called_with('sometopic',-127,None)
 
     # testing callback subscribed to topic
     assert t.queue.qsize() == 0
@@ -152,7 +152,7 @@ def test_end_to_end_ints():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_with('sometopic',32767)
+    cb.assert_called_with('sometopic',32767,None)
 
     # testing callback subscribed to topic
     assert t.queue.qsize() == 0
@@ -160,7 +160,7 @@ def test_end_to_end_ints():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_with('sometopic',-32767)
+    cb.assert_called_with('sometopic',-32767,None)
 
     # testing callback subscribed to topic
     assert t.queue.qsize() == 0
@@ -168,7 +168,7 @@ def test_end_to_end_ints():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_with('sometopic',2147483647)
+    cb.assert_called_with('sometopic',2147483647,None)
 
     # testing callback subscribed to topic
     assert t.queue.qsize() == 0
@@ -176,14 +176,14 @@ def test_end_to_end_ints():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_with('sometopic',-2147483647)
+    cb.assert_called_with('sometopic',-2147483647,None)
 
 def test_end_to_end_floats():
     # Setup
     t = transportMock()
     c = Pytelemetry(t)
-    cb = mock.Mock(spec=["topic","data"])
-    default_cb = mock.Mock(spec=["topic","data"])
+    cb = mock.Mock(spec=["topic","data","opts"])
+    default_cb = mock.Mock(spec=["topic","data","opts"])
     c.subscribe('sometopic',cb)
     c.subscribe(None,default_cb)
 
@@ -193,7 +193,7 @@ def test_end_to_end_floats():
     assert t.queue.qsize() > 0
     c.update()
     assert t.queue.qsize() == 0
-    cb.assert_called_with('sometopic',0.0)
+    cb.assert_called_with('sometopic',0.0,None)
 
     # testing callback subscribed to topic
     assert t.queue.qsize() == 0

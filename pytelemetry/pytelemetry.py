@@ -1,5 +1,7 @@
-from .telemetry.telemetry import Telemetry
-from .telemetry.c_binding import TelemetryCBinding
+from pytelemetry.telemetry.telemetry import Telemetry
+from pytelemetry.telemetry.c_binding import TelemetryCBinding
+from pytelemetry.remoting import translate
+
 __all__ = ['Pytelemetry']
 
 _telemetry_use_c_api = False
@@ -70,6 +72,10 @@ class Pytelemetry:
         # else pick default callback
         else:
             cb = self.default_callback
-        # check callback is valid
+
+        # Extract eventual indexing and grouping data from topic
+        topic, opts = translate(topic)
+
+        # check callback is valid and call
         if cb:
-            cb(topic,payload)
+            cb(topic,payload, opts)
