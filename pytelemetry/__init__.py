@@ -7,4 +7,4 @@
     The communication protocol is implemented in C, and new devices can be
     added in a matter of minutes.
 """
-from pytelemetry import pytelemetry
+from pytelemetry.pytelemetry import Pytelemetry

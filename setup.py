@@ -14,7 +14,7 @@ except (IOError, ImportError) as e:
 setup(
     name='pytelemetry',
 
-    version='1.1.1',
+    version='1.1.2',
 
     description='Lightweight remote monitoring and control of embedded devices',
     long_description=description, # Not working !
