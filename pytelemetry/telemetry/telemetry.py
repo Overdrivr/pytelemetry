@@ -6,9 +6,9 @@ class Telemetry:
     """
 Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in python
     """
-    def __init__(self,transport, on_frame_callback):
+    def __init__(self, transport, callback):
         self.transport = transport
-        self.on_frame_callback = on_frame_callback
+        self.on_frame_callback = callback
         self.delimiter = Delimiter(self._on_frame_detected)
         self.types = {'float32' : 0,
                       'uint8'   : 1,
@@ -27,59 +27,41 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
                       'int16'   : 2,
                       'int32'   : 4}
 
-        self.rtypes = {0 : 'float32',
-                       1 : 'uint8',
-                       2 : 'uint16',
-                       3 : 'uint32',
-                       4 : 'int8',
-                       5 : 'int16',
-                       6 : 'int32',
-                       7 : 'string'}
+        self.rtypes = dict(zip(self.types.values(), self.types.keys()))
 
-        self.formats = {'float32' : "<f",
-                        'uint8'   : "<B",
-                        'uint16'  : "<H",
-                        'uint32'  : "<L",
-                        'int8'    : "<b",
-                        'int16'   : "<h",
-                        'int32'   : "<l"}
+        self.formats = {'float32' : "f",
+                        'uint8'   : "B",
+                        'uint16'  : "H",
+                        'uint32'  : "L",
+                        'int8'    : "b",
+                        'int16'   : "h",
+                        'int32'   : "l"}
 
-    def publish(self,topic, data, datatype):
-        frame = bytearray()
-
+    def publish(self, topic, data, datatype):
         # header
         if not datatype in self.types:
             return # Not raising exceptions for now for consistency with C API
             # TODO: To fix
             #raise IndexError("Provided datatype ",datatype," unknown.")
 
-        header = pack("<H",self.types[datatype])
-        for b in header:
-            frame.append(b)
-
-        # topic
-        for b in topic.encode('ASCII'):
-            frame.append(b)
-        # EOL
-        frame.append(0)
-
-        # payload
-        payload = None
+        topic = topic.encode('utf8')
 
         if datatype == "string":
-            payload = data.encode("ASCII")
+            data = data.encode("utf8")
+            payload_fmt = "%ds" % len(data)
         else:
-            payload = pack(self.formats[datatype],data)
+            payload_fmt = self.formats[datatype]
 
-        for b in payload:
-            frame.append(b)
+        frame = pack("<H%dsB%s" % (len(topic), payload_fmt), 
+                        self.types[datatype], 
+                        topic, 0, 
+                        data)
+        frame = bytearray(frame)
 
         # crc
         _crc = crc16(frame)
         _crc = pack("<H",_crc)
-
-        for b in _crc:
-            frame.append(b)
+        frame.extend(_crc)
 
         # bytestuff
         frame = self.delimiter.encode(frame)
@@ -100,33 +82,30 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
         #import pdb; pdb.set_trace()
         # check crc
         local_crc = crc16(frame[:-2])
-        frame_crc, = unpack_from("<H", frame[-2:], offset=0)
-
+        frame_crc, = unpack("<H", frame[-2:])
         if local_crc != frame_crc:
             return
 
         # header
-        header, = unpack_from("<H", frame, offset=0)
+        header, = unpack_from("<H", frame)
+        if not header in self.rtypes:
+            return
 
         # locate EOL
         try:
-            i = frame[2:-2].find(0) + 2 # Account for offset of 2 induced by sciling
+            i = frame.index(0, 2, -2)
         except:
             return
 
         # decode topic
-        topic = frame[2:i].decode(encoding="utf-8")
-
-        if not header in self.rtypes:
-            return
+        topic = frame[2:i].decode("utf8")
 
         # Find type from header
         _type = self.rtypes[header]
-
         # decode data
         if _type == "string":
             # start at i+1 to remove EOL zero
-            data = frame[i+1:-2].decode(encoding="utf-8")
+            data = frame[i+1:-2].decode("utf8")
         else:
             # Find format
             fmt = self.formats[_type]
@@ -134,7 +113,7 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
             # (start at i+1 to remove EOL zero)
             if len(frame[i+1:-2]) != self.sizes[_type]:
                 return
-            data, = unpack(fmt,frame[i+1:-2])
+            data, = unpack_from(fmt, frame, i+1)
 
         self.on_frame_callback(topic, data)
 
