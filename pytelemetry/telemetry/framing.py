@@ -16,9 +16,9 @@ class Delimiter():
     def __init__(self,on_frame_decoded_callback):
         self.rx_state = RX_STATE.IDLE;
         self.escape_state = ESC_STATE.IDLE;
-        self.SOF = int('f7',16)
-        self.EOF = int('7f',16)
-        self.ESC = int('7d',16)
+        self.SOF = 0xf7
+        self.EOF = 0x7f
+        self.ESC = 0x7d
 
         self.payload = bytearray()
         # Max amount of payloads
