@@ -3,6 +3,7 @@
 * I/O logging for future replay functionality. RX frames that pass CRC and all
  TX frames are logged at info level.
 * Added loggers `telemetry.rx` and `telemetry.tx`
+* Adding Appveyor support
 
 ## 1.1.2
 
