@@ -16,9 +16,6 @@ platform:
   - x86
   - Any CPU
 
-matrix:
-  fast_finish: true
-
 init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
 
