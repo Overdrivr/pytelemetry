@@ -3,6 +3,8 @@
 from .crc import crc16
 from .framing import Delimiter
 from struct import pack, unpack, unpack_from
+from logging import getLogger
+from binascii import hexlify
 
 class Telemetry:
     """
@@ -39,6 +41,9 @@ class Telemetry:
                         'int16'   : "h",
                         'int32'   : "l"}
 
+        self.log_rx = getLogger('telemetry.rx')
+        self.log_tx = getLogger('telemetry.tx')
+
     def _encode_frame(self, topic, data, datatype):
         topic = topic.encode('utf8')
 
@@ -48,9 +53,9 @@ class Telemetry:
         else:
             payload_fmt = self.formats[datatype]
 
-        frame = pack("<H%dsB%s" % (len(topic), payload_fmt), 
-                        self.types[datatype], 
-                        topic, 0, 
+        frame = pack("<H%dsB%s" % (len(topic), payload_fmt),
+                        self.types[datatype],
+                        topic, 0,
                         data)
         frame = bytearray(frame)
 
@@ -58,6 +63,10 @@ class Telemetry:
         _crc = crc16(frame)
         _crc = pack("<H",_crc)
         frame.extend(_crc)
+
+        # Log sent frame
+        # self.log_tx.info(frame.hex()) # only in python 3.5
+        self.log_tx.info(hexlify(frame))
 
         return frame
 
@@ -75,6 +84,10 @@ class Telemetry:
         header, = unpack_from("<H", frame)
         if not header in self.rtypes:
             return
+
+        # Log received frame
+        # log_rx.info(frame.hex()) # only in python 3.5
+        self.log_rx.info(hexlify(frame))
 
         # locate EOL
         try:
@@ -136,9 +149,9 @@ if __name__ == '__main__':
     t = Telemetry(None,None)
 
     t.publish('sometopic ',12457,"int32")
-    
-    tests = [ ('foo', 'bar é$à', 'string'), 
-              ('çé', 2**30, 'int32'), 
+
+    tests = [ ('foo', 'bar é$à', 'string'),
+              ('çé', 2**30, 'int32'),
               ('yolo', 32768, 'uint16') ]
 
     for topic, data, typ in tests:
