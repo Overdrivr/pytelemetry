@@ -3,6 +3,8 @@
 from .crc import crc16
 from .framing import Delimiter
 from struct import pack, unpack, unpack_from
+from logging import getLogger
+from binascii import hexlify
 
 class Telemetry:
     """
@@ -39,6 +41,9 @@ class Telemetry:
                         'int16'   : "h",
                         'int32'   : "l"}
 
+        self.log_rx = getLogger('telemetry.rx')
+        self.log_tx = getLogger('telemetry.tx')
+
     def _encode_frame(self, topic, data, datatype):
         topic = topic.encode('utf8')
 
@@ -48,9 +53,9 @@ class Telemetry:
         else:
             payload_fmt = self.formats[datatype]
 
-        frame = pack("<H%dsB%s" % (len(topic), payload_fmt), 
-                        self.types[datatype], 
-                        topic, 0, 
+        frame = pack("<H%dsB%s" % (len(topic), payload_fmt),
+                        self.types[datatype],
+                        topic, 0,
                         data)
         frame = bytearray(frame)
 
@@ -58,6 +63,9 @@ class Telemetry:
         _crc = crc16(frame)
         _crc = pack("<H",_crc)
         frame.extend(_crc)
+
+        # Log sent frame
+        self.log_tx.info(hexlify(frame))
 
         return frame
 
@@ -69,17 +77,25 @@ class Telemetry:
         local_crc = crc16(frame[:-2])
         frame_crc, = unpack("<H", frame[-2:])
         if local_crc != frame_crc:
+            self.log_rx.warn("CRC local {0} vs frame {1} for {2}"
+                             .format(local_crc,frame_crc,hexlify(frame)))
             return
 
         # header
         header, = unpack_from("<H", frame)
         if not header in self.rtypes:
+            self.log_rx.warn("Header not found for {0}".format(hexlify(frame)))
             return
+
+        # Log received frame
+        self.log_rx.info(hexlify(frame))
 
         # locate EOL
         try:
             i = frame.index(0, 2, -2)
         except:
+            self.log_rx.warn("topic EOL not found for {0}"
+                             .format(hexlify(frame)))
             return
 
         # decode topic
@@ -97,6 +113,10 @@ class Telemetry:
             # Check actual sizes matches the one expected by unpack
             # (start at i+1 to remove EOL zero)
             if len(frame[i+1:-2]) != self.sizes[_type]:
+                self.log_rx.warn("Payload size {0} not matching {1} for {2}"
+                        .format(len(frame[i+1:-2]),
+                                self.sizes[_type],
+                                hexlify(frame)))
                 return
             data, = unpack_from(fmt, frame, i+1)
 
@@ -134,14 +154,4 @@ class Telemetry:
 
 if __name__ == '__main__':
     t = Telemetry(None,None)
-
     t.publish('sometopic ',12457,"int32")
-    
-    tests = [ ('foo', 'bar é$à', 'string'), 
-              ('çé', 2**30, 'int32'), 
-              ('yolo', 32768, 'uint16') ]
-
-    for topic, data, typ in tests:
-        frame = bytes(t._encode_frame(topic, data, typ))
-        decoded = t._decode_frame(frame)
-        assert decoded == (topic, data), '%s != %s' % (decoded, (topic, data))
