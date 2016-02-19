@@ -31,4 +31,4 @@ install:
   - "%PYTHON%/Scripts/pip.exe install pytest-cov"
 
 test_script:
-  - "C:/Python34/Scripts/py.test --cov"
+  - "%PYTHON%/Scripts/py.test --cov"
