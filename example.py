@@ -20,7 +20,7 @@ def init_logging():
     tx.setLevel(logging.DEBUG)
 
     # Format how data will be .. formatted
-    formatter = logging.Formatter('%(asctime)s | %(message)s')
+    formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
 
     # Create a handler to save logging output to a file
     dateTag = datetime.datetime.now().strftime("%Y-%b-%d_%H-%M-%S")
@@ -49,6 +49,9 @@ def main():
 
     transport.connect(options)
     #c.subscribe(None, printer)
+
+    bad_frame = bytearray(b'0700736f6d65746f70696300626f6f7961613ecc')
+    c.api._decode_frame(bad_frame)
 
     c.publish('sometopic','booyaa','string')
 
