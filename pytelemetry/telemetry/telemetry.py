@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+
 from .crc import crc16
 from .framing import Delimiter
 from struct import pack, unpack, unpack_from
 
 class Telemetry:
     """
-Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in python
+    Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in python
     """
     def __init__(self, transport, callback):
         self.transport = transport
@@ -37,13 +39,7 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
                         'int16'   : "h",
                         'int32'   : "l"}
 
-    def publish(self, topic, data, datatype):
-        # header
-        if not datatype in self.types:
-            return # Not raising exceptions for now for consistency with C API
-            # TODO: To fix
-            #raise IndexError("Provided datatype ",datatype," unknown.")
-
+    def _encode_frame(self, topic, data, datatype):
         topic = topic.encode('utf8')
 
         if datatype == "string":
@@ -63,23 +59,12 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
         _crc = pack("<H",_crc)
         frame.extend(_crc)
 
-        # bytestuff
-        frame = self.delimiter.encode(frame)
+        return frame
 
-        # send
-        if self.transport.writeable():
-            self.transport.write(frame)
-
-    def update(self):
-        amount = self.transport.readable();
-        for i in range(amount):
-            c = self.transport.read(maxbytes=1)
-            self.delimiter.decode(c)
-
-    def _on_frame_detected(self, frame):
+    def _decode_frame(self, frame):
         if len(frame) < 2:
             return
-        #import pdb; pdb.set_trace()
+
         # check crc
         local_crc = crc16(frame[:-2])
         frame_crc, = unpack("<H", frame[-2:])
@@ -115,6 +100,35 @@ Low level telemetry protocol (github.com/Overdrivr/Telemetry) implemented in pyt
                 return
             data, = unpack_from(fmt, frame, i+1)
 
+        return topic, data
+
+    def publish(self, topic, data, datatype):
+        # header
+        if not datatype in self.types:
+            return # Not raising exceptions for now for consistency with C API
+            # TODO: To fix
+            #raise IndexError("Provided datatype ",datatype," unknown.")
+
+        frame = self._encode_frame(topic, data, datatype)
+
+        # bytestuff
+        frame = self.delimiter.encode(frame)
+
+        # send
+        if self.transport.writeable():
+            self.transport.write(frame)
+
+    def update(self):
+        amount = self.transport.readable();
+        for i in range(amount):
+            c = self.transport.read(maxbytes=1)
+            self.delimiter.decode(c)
+
+    def _on_frame_detected(self, frame):
+        topic_data = self._decode_frame(frame)
+        if topic_data is None:
+            return
+        topic, data = topic_data
         self.on_frame_callback(topic, data)
 
 
@@ -122,3 +136,12 @@ if __name__ == '__main__':
     t = Telemetry(None,None)
 
     t.publish('sometopic ',12457,"int32")
+    
+    tests = [ ('foo', 'bar é$à', 'string'), 
+              ('çé', 2**30, 'int32'), 
+              ('yolo', 32768, 'uint16') ]
+
+    for topic, data, typ in tests:
+        frame = bytes(t._encode_frame(topic, data, typ))
+        decoded = t._decode_frame(frame)
+        assert decoded == (topic, data), '%s != %s' % (decoded, (topic, data))
