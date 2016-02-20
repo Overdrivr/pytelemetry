@@ -4,6 +4,8 @@
  TX frames are logged at info level.
 * Added loggers `telemetry.rx` and `telemetry.tx`
 * Adding Appveyor support
+* Support Python 3.3, 3.4 and 3.5
+* Fixed README.md not displayed on pypi
 
 ## 1.1.2
 

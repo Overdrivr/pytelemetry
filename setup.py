@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from setuptools import setup, find_packages, Extension
 from codecs import open
 from os import path
@@ -5,19 +7,22 @@ from setuptools.dist import Distribution
 import pypandoc
 
 try:
-   description = pypandoc.convert('README.md', 'rst')
-except (IOError, ImportError) as e:
-    print("ERROR : Could not convert README.md. Fallback")
-    print(e)
-    description = open('README.md').read()
+    long_description = pypandoc.convert('README.md', 'rst')
+    long_description = long_description.replace("\r","")
+except OSError:
+    print("Pandoc not found. Long_description conversion failure.")
+    import io
+    # pandoc is not installed, fallback to using raw contents
+    with io.open('README.md', encoding="utf-8") as f:
+        long_description = f.read()
 
 setup(
     name='pytelemetry',
 
-    version='1.1.2',
+    version='1.1.3',
 
     description='Lightweight remote monitoring and control of embedded devices',
-    long_description=description, # Not working !
+    long_description=long_description,
 
     url='https://github.com/Overdrivr/pytelemetry',
 
@@ -30,7 +35,6 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
 
-        # Indicate who your project is intended for
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',
         'Intended Audience :: Telecommunications Industry',
@@ -39,11 +43,10 @@ setup(
         'Topic :: Software Development :: Embedded Systems',
         'Topic :: Software Development :: Libraries :: Python Modules',
 
-        # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: MIT License',
 
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
     ],
 
@@ -57,7 +60,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['pyserial'],
+    install_requires=['pyserial','enum34'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
