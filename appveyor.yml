@@ -18,7 +18,6 @@ environment:
 
 platform:
   - x86
-  - Any CPU
 
 init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
