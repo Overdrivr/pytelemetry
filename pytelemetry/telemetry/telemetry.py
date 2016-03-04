@@ -5,6 +5,7 @@ from .framing import Delimiter
 from struct import pack, unpack, unpack_from
 from logging import getLogger
 from binascii import hexlify
+import struct
 
 class Telemetry:
     """
@@ -112,13 +113,19 @@ class Telemetry:
             fmt = self.formats[_type]
             # Check actual sizes matches the one expected by unpack
             # (start at i+1 to remove EOL zero)
+            # TODO : Use calcsize instead
             if len(frame[i+1:-2]) != self.sizes[_type]:
                 self.log_rx.warn("Payload size {0} not matching {1} for {2}"
                         .format(len(frame[i+1:-2]),
                                 self.sizes[_type],
                                 hexlify(frame)))
                 return
-            data, = unpack_from(fmt, frame, i+1)
+            try:
+                # TODO : test with python 64 bits
+                data, = unpack_from("<%s"%fmt, frame, i+1)
+            except struct.error as e:
+                self.log_rx.error("Unpack error : %s %s" % (e,frame))
+                return None, None
 
         return topic, data
 
