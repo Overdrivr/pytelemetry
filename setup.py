@@ -4,17 +4,10 @@ from setuptools import setup, find_packages, Extension
 from codecs import open
 from os import path
 from setuptools.dist import Distribution
-import pypandoc
+import io
 
-try:
-    long_description = pypandoc.convert('README.md', 'rst')
-    long_description = long_description.replace("\r","")
-except OSError:
-    print("Pandoc not found. Long_description conversion failure.")
-    import io
-    # pandoc is not installed, fallback to using raw contents
-    with io.open('README.md', encoding="utf-8") as f:
-        long_description = f.read()
+with io.open('DESCRIPTION.rst', encoding="utf-8") as f:
+    long_description = f.read()
 
 setup(
     name='pytelemetry',
