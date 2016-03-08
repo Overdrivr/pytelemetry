@@ -23,7 +23,7 @@ First, instanciate one of the available transport class (*Note: so far, only ser
 Then create a `Pytelemetry` object.
 
 ```python
-from pytelemetry.pytelemetry import Pytelemetry
+from pytelemetry import Pytelemetry
 from pytelemetry.transports.serialtransport import SerialTransport
 import time
 
@@ -97,10 +97,14 @@ Python 3.5 is supported. Support for python 3.4 and 3.3 will be added in a near 
 pip3 install pytelemetry
 ```
 
+# Advanced features
+
+* Support for arrays and sparse arrays. Send individual array items along with their item using topics like `foo:2`. '2' is used here for the index, the value is provided inside the payload.
+
 ## Future improvements
 
 In the next milestone, it is planned to make topics more meaningful (on the python-implementation only).
-* Publishing to topics like `foo:2`, will add indexing data. This will add a nice support for arrays and sparse arrays.
+
 * Publishing to topics like `bar\foo`, will add group data. This will indicate that there is a group called `bar`, with a subtopic called `foo`
 * Combination : `bar\foobar\foo`,`bar\foobar\foo:2`
 * Multiple instances : `bar\12\foo` will be understood as `foo` instance number 12 (useful if you want to have multiple instances under a same topic name)
