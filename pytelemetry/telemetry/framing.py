@@ -114,6 +114,3 @@ class Delimiter():
         frame.append(self.EOF)
 
         return frame
-
-    def get_processed_octets(self):
-        return self.processed_octets
