@@ -47,6 +47,28 @@ class Pytelemetry:
         else:
             self.api = Telemetry(transport,self._on_frame)
 
+    def resetStats(self):
+        """
+Resets all counters that monitor transport and protocol to 0.
+        """
+        self.api.delimiter.resetStats()
+        self.api.resetStats()
+
+    def stats(self):
+        """
+Returns a dictionnary of dictionnary that contains critical information
+about the transport and protocol behavior, such as:
+   * amount of received frames
+   * amount of badly delimited frames
+   * amount of correctly delimited but still corrupted frames
+   * etc
+        """
+        d = dict()
+        d['framing'] = self.api.delimiter.stats()
+        d['protocol'] = self.api.stats()
+
+        return d
+
     def publish(self, topic, data, datatype):
         """
 
