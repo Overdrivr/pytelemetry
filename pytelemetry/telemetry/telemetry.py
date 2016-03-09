@@ -183,6 +183,7 @@ class Telemetry:
         # header
         if not datatype in self.types:
             self.log_rx.error("Provided datatype {0} not found for ({1}, {2})".format(datatype, topic, data))
+            raise IndexError("Provided datatype {0} not found for ({1}, {2})".format(datatype, topic, data))
             return
 
         frame = self._encode_frame(topic, data, datatype)

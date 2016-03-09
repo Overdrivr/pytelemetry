@@ -41,7 +41,8 @@ def test_unexisting_type():
     t = transportMock()
     c = Pytelemetry(t)
 
-    c.publish('sometopic',12,'int323')
+    with pytest.raises(IndexError):
+        c.publish('sometopic',12,'int323')
     assert t.queue.qsize() == 0
 
 def test_hardcoded():
