@@ -15,7 +15,9 @@ the [PubSub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)
 of the protocol. It can run on any embedded system, along with official
 distributions for Arduino and ARM Mbed.
 
-* `pytelemetrycli` is a powerful command line interface to interact with
+* [`pytelemetrycli`](https://github.com/Overdrivr/pytelemetrycli)
+[![PyPI version](https://badge.fury.io/py/pytelemetrycli.svg)](https://badge.fury.io/py/pytelemetrycli)
+is a powerful command line interface to interact with
 embedded devices using the protocol. It enables instant **data visualization**
 of any received data, **full logging** of communications, **health monitoring**
 of the serial port and much more.
