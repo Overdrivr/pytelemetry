@@ -4,6 +4,8 @@ pytelemetry
 This module implements a powerful communication protocol that makes
 remote control and monitoring  of embedded devices an effortless task.
 
+-  `Project page <https://github.com/Overdrivr/pytelemetry>`__
+
 .. code:: python
 
     from pytelemetry import Pytelemetry

@@ -1,6 +1,6 @@
 [![PyPI version](https://badge.fury.io/py/pytelemetry.svg)](https://badge.fury.io/py/pytelemetry) [![Join the chat at https://gitter.im/Overdrivr/pytelemetry](https://badges.gitter.im/Overdrivr/pytelemetry.svg)](https://gitter.im/Overdrivr/pytelemetry?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Stories in Ready](https://badge.waffle.io/Overdrivr/pytelemetrycli.svg?label=ready&title=Ready)](http://waffle.io/Overdrivr/pytelemetrycli)
-*Windows*[![Build status](https://ci.appveyor.com/api/projects/status/03jtmphrld6k185v/branch/master?svg=true&passingText=master%20:%20OK&failingText=master%20:%20fail&pendingText=master%20:%20pending)](https://ci.appveyor.com/project/Overdrivr/pytelemetry/branch/master)
-*Linux*[![Build Status](https://travis-ci.org/Overdrivr/pytelemetry.svg?branch=master)](https://travis-ci.org/Overdrivr/pytelemetry)
+*Windows* [![Build status](https://ci.appveyor.com/api/projects/status/03jtmphrld6k185v/branch/master?svg=true&passingText=master%20:%20OK&failingText=master%20:%20fail&pendingText=master%20:%20pending)](https://ci.appveyor.com/project/Overdrivr/pytelemetry/branch/master)
+*Linux* [![Build Status](https://travis-ci.org/Overdrivr/pytelemetry.svg?branch=master)](https://travis-ci.org/Overdrivr/pytelemetry)
 # pytelemetry
 
 ![Overview](https://raw.githubusercontent.com/Overdrivr/Telemetry/master/pubsub_overview.png)

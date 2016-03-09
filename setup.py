@@ -12,9 +12,9 @@ with io.open('DESCRIPTION.rst', encoding="utf-8") as f:
 setup(
     name='pytelemetry',
 
-    version='1.1.5',
+    version='1.1.6',
 
-    description='Lightweight remote monitoring and control of embedded devices',
+    description='First class data visualization and communication with embedded devices',
     long_description=long_description,
 
     url='https://github.com/Overdrivr/pytelemetry',
