@@ -45,6 +45,29 @@ class Telemetry:
         self.log_rx = getLogger('telemetry.rx')
         self.log_tx = getLogger('telemetry.tx')
 
+        self.resetStats()
+
+    def resetStats(self):
+        self.rx_decoded_frames = 0
+        self.rx_corrupted_crc = 0
+        self.rx_corrupted_header = 0
+        self.rx_corrupted_eol = 0
+        self.rx_corrupted_topic = 0
+        self.rx_corrupted_payload = 0
+        self.tx_encoded_frames = 0
+
+    def stats(self):
+        return {
+            "rx_decoded_frames" : self.rx_decoded_frames,
+            "rx_corrupted_crc" : self.rx_corrupted_crc,
+            "rx_corrupted_header" : self.rx_corrupted_header,
+            "rx_corrupted_eol" : self.rx_corrupted_eol,
+            "rx_corrupted_topic" : self.rx_corrupted_topic,
+            "rx_corrupted_payload" : self.rx_corrupted_payload,
+            "tx_encoded_frames" : self.tx_encoded_frames
+        }
+
+
     def _encode_frame(self, topic, data, datatype):
         topic = topic.encode('utf8')
 
@@ -68,28 +91,42 @@ class Telemetry:
         # Log sent frame
         self.log_tx.info(hexlify(frame))
 
+        self.tx_encoded_frames += 1
+
         return frame
 
     def _decode_frame(self, frame):
         if len(frame) < 2:
             return
 
-        # check crc
+        # compute local crc
         local_crc = crc16(frame[:-2])
-        frame_crc, = unpack("<H", frame[-2:])
+
+        # unpack frame crc
+        try:
+            frame_crc, = unpack("<H", frame[-2:])
+        except struct.error as e:
+            self.log_rx.error("Could not unpack CRC. %s %s" % (e,frame))
+            return
+
         if local_crc != frame_crc:
             self.log_rx.warn("CRC local {0} vs frame {1} for {2}"
                              .format(local_crc,frame_crc,hexlify(frame)))
+            self.rx_corrupted_crc += 1
             return
 
-        # header
-        header, = unpack_from("<H", frame)
+        # unpack header
+        try:
+            header, = unpack_from("<H", frame)
+        except struct.error as e:
+            self.log_rx.error("Could not unpack header in frame {1} : {0} " % (e,hexlify(frame)))
+            self.rx_corrupted_header += 1
+            return
+
         if not header in self.rtypes:
-            self.log_rx.warn("Header not found for {0}".format(hexlify(frame)))
+            self.log_rx.warn("Header not found in frame {0}".format(hexlify(frame)))
+            self.rx_corrupted_header += 1
             return
-
-        # Log received frame
-        self.log_rx.info(hexlify(frame))
 
         # locate EOL
         try:
@@ -97,13 +134,20 @@ class Telemetry:
         except:
             self.log_rx.warn("topic EOL not found for {0}"
                              .format(hexlify(frame)))
+            self.rx_corrupted_eol += 1
             return
 
         # decode topic
-        topic = frame[2:i].decode("utf8")
+        try:
+            topic = frame[2:i].decode("utf8")
+        except UnicodeError as e:
+            self.log_rx.warning("Decoding error for topic. %s. Using 'replace' option." % e)
+            self.rx_corrupted_topic += 1
+            topic = frame[2:i].decode("utf8",errors='replace')
 
         # Find type from header
         _type = self.rtypes[header]
+
         # decode data
         if _type == "string":
             # start at i+1 to remove EOL zero
@@ -119,22 +163,27 @@ class Telemetry:
                         .format(len(frame[i+1:-2]),
                                 self.sizes[_type],
                                 hexlify(frame)))
+                self.rx_corrupted_payload += 1
                 return
+
+            # Unpack payload
             try:
-                # TODO : test with python 64 bits
-                data, = unpack_from("<%s"%fmt, frame, i+1)
+                data, = unpack_from("<%s" % fmt, frame, i+1)
             except struct.error as e:
-                self.log_rx.error("Unpack error : %s %s" % (e,frame))
-                return None, None
+                self.log_rx.error("Could not unpack payload in frame {0} : {1}" % (hexlify(frame),e))
+                self.rx_corrupted_payload += 1
+                return
+
+        self.log_rx.info(hexlify(frame))
+        self.rx_decoded_frames += 1
 
         return topic, data
 
     def publish(self, topic, data, datatype):
         # header
         if not datatype in self.types:
-            return # Not raising exceptions for now for consistency with C API
-            # TODO: To fix
-            #raise IndexError("Provided datatype ",datatype," unknown.")
+            self.log_rx.error("Provided datatype {0} not found for ({1}, {2})".format(datatype, topic, data))
+            return
 
         frame = self._encode_frame(topic, data, datatype)
 
@@ -157,8 +206,3 @@ class Telemetry:
             return
         topic, data = topic_data
         self.on_frame_callback(topic, data)
-
-
-if __name__ == '__main__':
-    t = Telemetry(None,None)
-    t.publish('sometopic ',12457,"int32")
