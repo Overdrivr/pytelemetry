@@ -29,7 +29,12 @@ class SerialTransport:
         }
 
     def connect(self, options):
-        self.driver = serial.Serial(port=options['port'],baudrate=options['baudrate'])
+        # Default values for options for retrocompatibility
+        if not 'timeout' in options:
+            options['timeout'] = 1
+        self.driver = serial.Serial(port=options['port'],
+                                    baudrate=options['baudrate'],
+                                    write_timeout=options['timeout'])
 
     def disconnect(self):
         self.driver.close()
