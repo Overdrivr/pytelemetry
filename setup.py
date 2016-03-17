@@ -12,7 +12,7 @@ with io.open('DESCRIPTION.rst', encoding="utf-8") as f:
 setup(
     name='pytelemetry',
 
-    version='1.1.6',
+    version='1.1.7',
 
     description='First class data visualization and communication with embedded devices',
     long_description=long_description,
@@ -26,10 +26,9 @@ setup(
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
 
         'Intended Audience :: Developers',
-        'Intended Audience :: End Users/Desktop',
         'Intended Audience :: Telecommunications Industry',
         'Topic :: Communications',
         'Topic :: Scientific/Engineering :: Human Machine Interfaces',
