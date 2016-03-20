@@ -9,17 +9,18 @@ class SerialTransport:
 
         self.resetStats()
 
-    def resetStats(self):
-
+    def resetStats(self, averaging_window=100):
         # Construct a dictionnary for holding references to all counters
         self.measurements = {
             "rx_bytes"  : 0, # To store amount of received and sent characters
             "tx_bytes"  : 0,
             "rx_chunks" : 0, # To store amount of chunks of data
             "tx_chunks"  : 0,
-            "rx_in_waiting" : 0, # To store current and peak RX queue size
+            "rx_in_waiting" : 0, # To store current, avg and peak RX queue size
+            "rx_in_waiting_avg" : 0,
             "rx_in_waiting_max" : 0
         }
+        self.averaging_window = averaging_window
 
     def stats(self):
         return self.measurements
@@ -41,9 +42,6 @@ class SerialTransport:
         except serial.SerialException as e:
             self.log_tr.error("Caught Exception during read driver.in_waiting : %s" % e)
             return None
-
-        self.measurements['rx_in_waiting'] = in_waiting
-        self.measurements['rx_in_waiting_max'] = max(self.measurements['rx_in_waiting_max'], in_waiting)
 
         if in_waiting > maxbytes:
             in_waiting = maxbytes
@@ -68,6 +66,7 @@ class SerialTransport:
 
         self.measurements['rx_in_waiting'] = in_waiting
         self.measurements['rx_in_waiting_max'] = max(self.measurements['rx_in_waiting_max'], in_waiting)
+        self.measurements['rx_in_waiting_avg'] = (in_waiting + self.averaging_window * self.measurements['rx_in_waiting_avg']) / (self.averaging_window + 1)
 
         return in_waiting
 
