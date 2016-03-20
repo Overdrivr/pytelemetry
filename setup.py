@@ -12,7 +12,7 @@ with io.open('DESCRIPTION.rst', encoding="utf-8") as f:
 setup(
     name='pytelemetry',
 
-    version='1.1.7',
+    version='1.1.8',
 
     description='First class data visualization and communication with embedded devices',
     long_description=long_description,
