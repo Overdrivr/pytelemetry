@@ -57,7 +57,7 @@ Subscribe a `printer` function to all received topics.
 Basically, this function will be called every time a new frame is received.
 
 ``` python
-def printer(topic, data):
+def printer(topic, data, options):
     print(topic," : ", data)
 
 # subscribe to a topic. Subscribing to None subscribes to all
